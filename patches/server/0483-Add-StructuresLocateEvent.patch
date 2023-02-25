@@ -17,24 +17,24 @@ index 4f4595356f2d17c261a84e13d37351f06433177b..3aa5aec0b17cbdff922009b940d49bb0
 +    @org.jetbrains.annotations.VisibleForTesting
 +    public static final RegistryKey<io.papermc.paper.world.structure.ConfiguredStructure> CONFIGURED_STRUCTURE_REGISTRY_KEY = RegistryKeyImpl.createInternal("worldgen/structure");
 +    @Deprecated(forRemoval = true)
-+    static final RegistryEntry<Structure, io.papermc.paper.world.structure.ConfiguredStructure, ?> CONFIGURED_STRUCTURE_REGISTRY_ENTRY = entry(Registries.STRUCTURE, CONFIGURED_STRUCTURE_REGISTRY_KEY, io.papermc.paper.world.structure.ConfiguredStructure.class, io.papermc.paper.world.structure.PaperConfiguredStructure::minecraftToBukkit).delayed();
++    static final RegistryEntry<Structure, io.papermc.paper.world.structure.ConfiguredStructure> CONFIGURED_STRUCTURE_REGISTRY_ENTRY = entry(Registries.STRUCTURE, CONFIGURED_STRUCTURE_REGISTRY_KEY, io.papermc.paper.world.structure.ConfiguredStructure.class, io.papermc.paper.world.structure.PaperConfiguredStructure::minecraftToBukkit).delayed();
 +
-     static final List<RegistryEntry<?, ?, ?>> REGISTRY_ENTRIES;
-     private static final Map<RegistryKey<?>, RegistryEntry<?, ?, ?>> BY_REGISTRY_KEY;
-     private static final Map<ResourceKey<?>, RegistryEntry<?, ?, ?>> BY_RESOURCE_KEY;
+     static final List<RegistryEntry<?, ?>> REGISTRY_ENTRIES;
+     private static final Map<RegistryKey<?>, RegistryEntry<?, ?>> BY_REGISTRY_KEY;
+     private static final Map<ResourceKey<?>, RegistryEntry<?, ?>> BY_RESOURCE_KEY;
 diff --git a/src/main/java/io/papermc/paper/registry/PaperRegistryAccess.java b/src/main/java/io/papermc/paper/registry/PaperRegistryAccess.java
-index 9f2bcfe0d9e479466a1e46e503071d1151310e6a..7aa1a29e93b787e1167169bc7d6e9563daf6241e 100644
+index d591e3a2e19d5358a0d25a5a681368943622d231..c34cffd369ead2b3e43464a02d4f8fb98ca969c1 100644
 --- a/src/main/java/io/papermc/paper/registry/PaperRegistryAccess.java
 +++ b/src/main/java/io/papermc/paper/registry/PaperRegistryAccess.java
 @@ -45,8 +45,13 @@ public class PaperRegistryAccess implements RegistryAccess {
      public <T extends Keyed> @Nullable Registry<T> getRegistry(final Class<T> type) {
          final RegistryKey<T> registryKey;
-         final @Nullable RegistryEntry<?, T, ?> entry;
+         final @Nullable RegistryEntry<?, T> entry;
 -        registryKey = requireNonNull(byType(type), () -> type + " is not a valid registry type");
 -        entry = PaperRegistries.getEntry(registryKey);
 +        if (type == io.papermc.paper.world.structure.ConfiguredStructure.class) { // manually handle "duplicate" registries to avoid polluting maps in PaperRegistries
 +            registryKey = (RegistryKey<T>) PaperRegistries.CONFIGURED_STRUCTURE_REGISTRY_KEY;
-+            entry = (RegistryEntry<?, T, ?>) PaperRegistries.CONFIGURED_STRUCTURE_REGISTRY_ENTRY;
++            entry = (RegistryEntry<?, T>) PaperRegistries.CONFIGURED_STRUCTURE_REGISTRY_ENTRY;
 +        } else {
 +            registryKey = requireNonNull(byType(type), () -> type + " is not a valid registry type");
 +            entry = PaperRegistries.getEntry(registryKey);

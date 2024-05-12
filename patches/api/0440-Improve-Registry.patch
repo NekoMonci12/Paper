@@ -31,14 +31,68 @@ index 62d2b3f950860dee0898d77b0a29635c3f9a7e23..704dba92f9246ef398ed8d162ebee3cf
      @Override
      public @NotNull String translationKey() {
 diff --git a/src/main/java/org/bukkit/Registry.java b/src/main/java/org/bukkit/Registry.java
-index f301f81817409f0a6799885d4f0972ed9bf3e4df..88bb3b9ae99fae97ec21972b75ec43cb6b7b22b5 100644
+index f301f81817409f0a6799885d4f0972ed9bf3e4df..6745fe6412c9d3ac775f341bb05ac7ab6e05ffa4 100644
 --- a/src/main/java/org/bukkit/Registry.java
 +++ b/src/main/java/org/bukkit/Registry.java
-@@ -353,6 +353,49 @@ public interface Registry<T extends Keyed> extends Iterable<T> {
+@@ -353,6 +353,103 @@ public interface Registry<T extends Keyed> extends Iterable<T> {
      @Nullable
      T get(@NotNull NamespacedKey key);
  
 +    // Paper start - improve Registry
++    /**
++     * Get the object by its key.
++     *
++     * @param key non-null key
++     * @return item or null if it does not exist
++     */
++    default @Nullable T get(final net.kyori.adventure.key.@NotNull Key key) {
++        if (key instanceof final NamespacedKey ns) {
++            return this.get(ns);
++        } else {
++            return this.get(new NamespacedKey(key.namespace(), key.value()));
++        }
++    }
++
++    /**
++     * Get the object by its key.
++     *
++     * @param key non-null key
++     * @return item or null if it does not exist
++     */
++    default @Nullable T get(final io.papermc.paper.registry.@NotNull TypedKey<T> key) {
++        return this.get(key.key());
++    }
++
++    /**
++     * Gets the object by its key or throws if it doesn't exist.
++     *
++     * @param key the key to get the object of in this registry
++     * @return the object for the key
++     * @throws java.util.NoSuchElementException if the key doesn't point to an object in the registry
++     */
++    default @NotNull T getOrThrow(final net.kyori.adventure.key.@NotNull Key key) {
++        final T value = this.get(key);
++        if (value == null) {
++            throw new java.util.NoSuchElementException("No value for " + key + " in " + this);
++        }
++        return value;
++    }
++
++    /**
++     * Gets the object by its key or throws if it doesn't exist.
++     *
++     * @param key the key to get the object of in this registry
++     * @return the object for the key
++     * @throws java.util.NoSuchElementException if the key doesn't point to an object in the registry
++     */
++    default @NotNull T getOrThrow(final io.papermc.paper.registry.@NotNull TypedKey<T> key) {
++        final T value = this.get(key);
++        if (value == null) {
++            throw new java.util.NoSuchElementException("No value for " + key + " in " + this);
++        }
++        return value;
++    }
++
 +    /**
 +     * Gets the key for this object or throws if it doesn't exist.
 +     * <p>
@@ -84,7 +138,7 @@ index f301f81817409f0a6799885d4f0972ed9bf3e4df..88bb3b9ae99fae97ec21972b75ec43cb
      /**
       * Returns a new stream, which contains all registry items, which are registered to the registry.
       *
-@@ -427,5 +470,12 @@ public interface Registry<T extends Keyed> extends Iterable<T> {
+@@ -427,5 +524,12 @@ public interface Registry<T extends Keyed> extends Iterable<T> {
          public Class<T> getType() {
              return this.type;
          }
